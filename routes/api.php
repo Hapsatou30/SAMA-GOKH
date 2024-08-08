@@ -8,9 +8,6 @@ Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');
 
-// Route::get('projets', [ProjetController::class, 'index']);
-// Route::post('projet', [ProjetController::class, 'store']);
-// Route::get('projets/{id}', [ProjetController::class, 'show']);
 Route::apiResource('projets', ProjetController::class);
 
 
