@@ -4,8 +4,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CommentaireController;
 
-/*Route::get('/user', function (Request $request) {
+Route::get('/user', function (Request $request) {
     return $request->user();
-})->middleware('auth:sanctum');*/
+})->middleware('auth:sanctum');
 
-Route::apiResource('commentaires', CommentaireController::class)->only(['index', 'store','update','destroy']);
+Route::apiResource('commentaires', CommentaireController::class);
