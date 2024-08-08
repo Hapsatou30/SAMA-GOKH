@@ -48,11 +48,7 @@ class ProjetController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(Projet $projet)
-    {
-        //
-    }
-
+  
     /**
      * Update the specified resource in storage.
      */
