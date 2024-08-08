@@ -3,6 +3,8 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Contracts\Validation\Validator;
+use Illuminate\Http\Exceptions\HttpResponseException;
 
 class StoreVoteRequest extends FormRequest
 {
@@ -11,7 +13,7 @@ class StoreVoteRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -22,7 +24,17 @@ class StoreVoteRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'projet_id' => ['required', 'exists:projets,id'],
+            'habitant_id' => ['required', 'exists:habitants,id'],
+            'statut' => ['required', 'in:pour,contre'],
         ];
+    }
+
+    public function failedValidation(Validator $validator)
+    {
+        throw new HttpResponseException(response()->json(
+            ['success' => false, 'errors' => $validator->errors()],
+            422
+        ));
     }
 }
