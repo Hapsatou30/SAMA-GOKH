@@ -53,7 +53,9 @@ class ProjetController extends Controller
      */
     public function update(UpdateProjetRequest $request, Projet $projet)
     {
-        //
+        $projet->fill($request->validated());
+        $projet->update();
+        return $this->customJsonResponse("Projet modifiée avec succès", $projet);
     }
 
     /**
@@ -61,6 +63,7 @@ class ProjetController extends Controller
      */
     public function destroy(Projet $projet)
     {
-        //
+        $projet->delete();
+        return $this->customJsonResponse("Pojet supprimé avec succès", 204);
     }
 }
