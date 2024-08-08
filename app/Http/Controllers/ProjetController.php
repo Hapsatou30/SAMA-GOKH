@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Projet;
 use App\Http\Requests\StoreProjetRequest;
 use App\Http\Requests\UpdateProjetRequest;
-use App\Models\Projet;
 
 class ProjetController extends Controller
 {
@@ -13,23 +13,23 @@ class ProjetController extends Controller
      */
     public function index()
     {
-        //
+        $projets = Projet::all();
+        return response()->json($projets);
     }
 
     /**
      * Show the form for creating a new resource.
      */
-    public function create()
-    {
-        //
-    }
-
     /**
      * Store a newly created resource in storage.
      */
     public function store(StoreProjetRequest $request)
     {
-        //
+        $projet = new Projet();
+        $projet->fill($request->validated());
+        $projet->save();
+        return self::customJsonResponse("Projet créé avec succès", $projet, 201);
+
     }
 
     /**
@@ -37,7 +37,8 @@ class ProjetController extends Controller
      */
     public function show(Projet $projet)
     {
-        //
+        return response()->json( $projet);
+
     }
 
     /**
