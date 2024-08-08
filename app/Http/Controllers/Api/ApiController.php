@@ -3,38 +3,81 @@
 namespace App\Http\Controllers\Api;
 
 use App\Models\User;
+use App\Models\Habitant;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 
 class ApiController extends Controller
 {
     //inscription
+    // public function register(Request $request)
+    // {
+    //     // Validation des données
+    //     $request->validate([
+    //         'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
+    //         'password' => ['required', 'string', 'min:8'],
+    //         'role_id' => ['required', 'exists:roles,id'], // Valider que le rôle existe
+    //     ]);
+
+    //     // Enregistrement des données
+    //     $user = User::create([
+    //         'email' => $request->email,
+    //         'password' => bcrypt($request->password),
+    //         'role_id' => $request->role_id, // Assigner le rôle à l'utilisateur
+    //     ]);
+
+    //     // Envoi du token d'authentification
+    //     $token = $user->createToken('authToken')->plainTextToken;
+
+    //     return response()->json([
+    //         "status" => true,
+    //         "message" => "Utilisateur enregistré avec succès",
+    //         "token" => $token,
+    //     ]);
+    // }
     public function register(Request $request)
     {
         // Validation des données
         $request->validate([
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
             'password' => ['required', 'string', 'min:8'],
-            'role_id' => ['required', 'exists:roles,id'], // Valider que le rôle existe
+            'nom' => ['required', 'string'],
+            'prenom' => ['required', 'string'],
+            'telephone' => ['required', 'string', 'unique:habitants'],
+            'adresse' => ['required', 'string'],
+            'sexe' => ['required', 'string'],
+            'date_naiss' => ['required', 'date'],
+            'photo' => ['nullable', 'string'],
+            'profession' => ['required', 'string'],
+            'numero_identite' => ['required', 'string'],
         ]);
-
-        // Enregistrement des données
+    
+        // Création de l'utilisateur
         $user = User::create([
             'email' => $request->email,
             'password' => bcrypt($request->password),
-            'role_id' => $request->role_id, // Assigner le rôle à l'utilisateur
+            'role_id' => 3, // Assigner le rôle d'habitant
         ]);
-
-        // Envoi du token d'authentification
-        $token = $user->createToken('authToken')->plainTextToken;
-
+    
+        // Création de l'habitant
+        $habitant = Habitant::create([
+            'user_id' => $user->id,
+            'nom' => $request->nom,
+            'prenom' => $request->prenom,
+            'telephone' => $request->telephone,
+            'adresse' => $request->adresse,
+            'sexe' => $request->sexe,
+            'date_naiss' => $request->date_naiss,
+            'photo' => $request->photo,
+            'profession' => $request->profession,
+            'numero_identite' => $request->numero_identite,
+        ]);
         return response()->json([
             "status" => true,
-            "message" => "Utilisateur enregistré avec succès",
-            "token" => $token,
+            "message" => "Utilisateur enregistré avec succès"
         ]);
     }
-
+    
     // connexion
     public function login(Request $request)
     {
