@@ -74,4 +74,29 @@ class ApiController extends Controller
            'message' => 'Utilisateur déconnecté'
         ]);
     }
+
+    // récupérer le profil utilisateur connecté
+    public function profile(){
+
+        //$userData = auth()->user();
+        $userData = request()->user();
+
+        return response()->json([
+            "status" => true,
+            "message" => "Données de profil",
+            "data" => $userData,
+            "user_id" => request()->user()->id,
+            "email" => request()->user()->email
+        ]);
+    }
+
+    // refresher le token d'authentification
+    public function refreshToken(Request $request){
+        $token = auth()->refresh();
+        return response()->json([
+            "access_token" => $token,
+            "token_type" => "bearer",
+            "expires_in" => env("JWT_TTL") * 30  .'seconds'
+        ]);
+    }
 }
