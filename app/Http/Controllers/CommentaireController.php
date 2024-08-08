@@ -13,7 +13,14 @@ class CommentaireController extends Controller
      */
     public function index()
     {
-        //
+        // Récupérer tous les commentaires
+    $commentaires = Commentaire::all();
+
+    // Retourner les commentaires en format JSON avec un message de succès
+    return response()->json([
+        'message' => 'Liste des Commentaires',
+        'data' => $commentaires
+    ], 200);
     }
 
     /**
@@ -29,7 +36,12 @@ class CommentaireController extends Controller
      */
     public function store(StoreCommentaireRequest $request)
     {
-        //
+        $commentaire = Commentaire::create($request->validated());
+    return response()->json([
+        'message' => 'Commentaire ajouté avec succès!',
+        'data' => $commentaire
+    ], 201);
+
     }
 
     /**
@@ -53,7 +65,17 @@ class CommentaireController extends Controller
      */
     public function update(UpdateCommentaireRequest $request, Commentaire $commentaire)
     {
-        //
+        // Valider les données reçues via la requête
+    $validatedData = $request->validated();
+
+    // Mettre à jour le commentaire avec les nouvelles données
+    $commentaire->update($validatedData);
+
+    // Retourner une réponse JSON avec un message de succès
+    return response()->json([
+        'message' => 'Commentaire mis à jour avec succès',
+        'data' => $commentaire
+    ], 200);
     }
 
     /**
@@ -61,6 +83,12 @@ class CommentaireController extends Controller
      */
     public function destroy(Commentaire $commentaire)
     {
-        //
+        // Supprimer le commentaire
+        $commentaire->delete();
+
+        // Retourner une réponse JSON avec un message de succès
+        return response()->json([
+            'message' => 'Commentaire supprimé avec succès'
+        ], 200);
     }
 }

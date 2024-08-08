@@ -11,7 +11,7 @@ class StoreCommentaireRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -22,7 +22,9 @@ class StoreCommentaireRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'projet_id' => 'required|exists:projets,id',
+            'habitant_id' => 'required|exists:habitants,id',
+            'contenu' => 'required|string|max:500',
         ];
     }
 }
