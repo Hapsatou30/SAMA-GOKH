@@ -10,8 +10,7 @@ Route::get('/user', function (Request $request) {
 })->middleware('auth:sanctum');
 
 // Route pour la modification et la suppression de projet.
-Route::apiResource('projets', ProjetController::class)->only('destroy');
-Route::post('projets/{projet}', [ProjetController::class, 'update']);
+Route::apiResource('projets', ProjetController::class);
 
 // Route pour vote
 Route::apiResource('votes', VoteController::class)->only('store');
