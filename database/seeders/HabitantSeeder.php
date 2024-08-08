@@ -2,8 +2,9 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use App\Models\Habitant;
 use Illuminate\Database\Seeder;
+use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
 class HabitantSeeder extends Seeder
 {
@@ -12,6 +13,6 @@ class HabitantSeeder extends Seeder
      */
     public function run(): void
     {
-        //
+        Habitant::factory(5)->create();
     }
 }
