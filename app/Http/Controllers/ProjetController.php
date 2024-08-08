@@ -35,11 +35,15 @@ class ProjetController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Projet $projet)
+    public function show($id)
     {
-        return response()->json( $projet);
-
+        // Récupérer le projet avec ses commentaires
+        $projet = Projet::with('commentaires','votes')->findOrFail($id);
+    
+        // Retourner les détails du projet avec les commentaires
+        return response()->json($projet);
     }
+    
 
     /**
      * Show the form for editing the specified resource.
