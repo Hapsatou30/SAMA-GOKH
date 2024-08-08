@@ -29,7 +29,8 @@ class VoteController extends Controller
      */
     public function store(StoreVoteRequest $request)
     {
-        //
+        $vote = Vote::create($request->validated());
+        return $this->customJsonResponse("Vote ajouté avec succès", $vote, 201);
     }
 
     /**

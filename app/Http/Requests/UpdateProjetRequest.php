@@ -3,6 +3,8 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Contracts\Validation\Validator;
+use Illuminate\Http\Exceptions\HttpResponseException;
 
 class UpdateProjetRequest extends FormRequest
 {
@@ -11,7 +13,7 @@ class UpdateProjetRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -22,7 +24,23 @@ class UpdateProjetRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            "user_id" => ["sometimes", "exists:users,id"],
+            "nom" => ["sometimes", "string", "max:255"],
+            "description" => ["sometimes", "string"],
+            "statut" => ["sometimes", "in:en-attente,en cours,terminé"],
+            "date_debut" => ["sometimes", "date", "after_or_equal:today", "before_or_equal:date_fin"],
+            "date_fin" => ["sometimes", "date", "after_or_equal:date_debut"],
+            "budget" => ["sometimes", "numeric", "min:0"],
+            "etat" => ["sometimes", "in:approuvé,rejeté"],
         ];
     }
+
+    public function failedValidation(Validator $validator)
+    {
+        throw new HttpResponseException(response()->json(
+            ['success' => false, 'errors' => $validator->errors()],
+            422
+        ));
+    }
 }
+
