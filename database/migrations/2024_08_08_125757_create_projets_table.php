@@ -22,6 +22,7 @@ return new class extends Migration
             $table->decimal('budget', 15, 2);
             $table->enum('etat', ['approuvé', 'rejeté']);
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 
