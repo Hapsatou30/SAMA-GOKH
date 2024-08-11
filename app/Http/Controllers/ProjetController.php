@@ -5,6 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\Projet;
 use App\Http\Requests\StoreProjetRequest;
 use App\Http\Requests\UpdateProjetRequest;
+use App\Mail\Email;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Auth;
 
 class ProjetController extends Controller
 {
@@ -23,14 +26,34 @@ class ProjetController extends Controller
     /**
      * Store a newly created resource in storage.
      */
+    // public function store(StoreProjetRequest $request)
+    // {
+    //     $projet = new Projet();
+    //     $projet->fill($request->validated());
+    //     $projet->save();
+    //     return self::customJsonResponse("Projet créé avec succès", $projet, 201);
+
+    // }
     public function store(StoreProjetRequest $request)
     {
         $projet = new Projet();
         $projet->fill($request->validated());
         $projet->save();
+    
+        $user = Auth::user();
+    
+        // Vérifier si l'utilisateur a le rôle 'habitant'
+        if ($user && $user->role_id === 3) { // Vérification basée sur role_id
+            // Récupérer les informations de l'habitant
+            $habitant = $user->habitant;
+    
+            // Envoyer l'email
+            Mail::to($user->email)->send(new Email($habitant, $projet->nom));
+        }
+    
         return self::customJsonResponse("Projet créé avec succès", $projet, 201);
-
     }
+    
 
     /**
      * Display the specified resource.
@@ -65,6 +88,9 @@ class ProjetController extends Controller
     public function destroy(Projet $projet)
     {
         $projet->delete();
-        return $this->customJsonResponse("Pojet supprimé avec succès", 204);
+        return $this->customJsonResponse("Projet supprimé avec succès", 204);
     }
+
+
+    
 }
