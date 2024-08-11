@@ -5,6 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\Projet;
 use App\Http\Requests\StoreProjetRequest;
 use App\Http\Requests\UpdateProjetRequest;
+use App\Mail\Email;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Auth;
 
 class ProjetController extends Controller
 {
@@ -23,13 +26,29 @@ class ProjetController extends Controller
     /**
      * Store a newly created resource in storage.
      */
+    // public function store(StoreProjetRequest $request)
+    // {
+    //     $projet = new Projet();
+    //     $projet->fill($request->validated());
+    //     $projet->save();
+    //     return self::customJsonResponse("Projet créé avec succès", $projet, 201);
+
+    // }
     public function store(StoreProjetRequest $request)
     {
         $projet = new Projet();
         $projet->fill($request->validated());
         $projet->save();
-        return self::customJsonResponse("Projet créé avec succès", $projet, 201);
 
+        $user = Auth::user();
+
+        // Vérifier si l'utilisateur a un role_id de 3 (habitant)
+        if ($user && $user->role_id == 3) {
+            // Envoyer l'email
+            Mail::to($user->email)->send(new Email($user));
+        }
+
+        return self::customJsonResponse("Projet créé avec succès", $projet, 201);
     }
 
     /**
