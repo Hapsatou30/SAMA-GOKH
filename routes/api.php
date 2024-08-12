@@ -37,7 +37,7 @@ Route::apiResource('commentaires', CommentaireController::class);
     Route::get("refresh", [ApiController::class, "refreshToken"]);
     Route::get("logout", [ApiController::class, "logout"]);
 });
-Route::middleware('auth:sanctum')->get('notifications', [NotificationController::class, 'getUserNotifications']);
+Route::get('notifications', [NotificationController::class, 'getUserNotifications']);
 Route::middleware('auth:sanctum')->post('notifications/{id}/read', [NotificationController::class, 'markAsRead']);
 
 
