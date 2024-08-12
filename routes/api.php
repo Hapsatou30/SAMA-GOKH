@@ -2,14 +2,15 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-
 use App\Http\Controllers\VoteController;
+
 use App\Http\Controllers\ProjetController;
+use App\Http\Controllers\Api\ApiController;
 
 use App\Http\Controllers\CommentaireController;
 
 
-use App\Http\Controllers\Api\ApiController;
+use App\Http\Controllers\NotificationController;
 
 
 Route::get('/user', function (Request $request) {
@@ -36,3 +37,7 @@ Route::apiResource('commentaires', CommentaireController::class);
     Route::get("refresh", [ApiController::class, "refreshToken"]);
     Route::get("logout", [ApiController::class, "logout"]);
 });
+Route::middleware('auth:sanctum')->get('notifications', [NotificationController::class, 'getUserNotifications']);
+Route::middleware('auth:sanctum')->post('notifications/{id}/read', [NotificationController::class, 'markAsRead']);
+
+
