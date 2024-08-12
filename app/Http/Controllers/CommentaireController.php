@@ -2,12 +2,16 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
+use App\Models\Commentaire;
 use App\Http\Requests\StoreCommentaireRequest;
 use App\Http\Requests\UpdateCommentaireRequest;
-use App\Models\Commentaire;
+
+use App\Traits\NotifiableTrait;
 
 class CommentaireController extends Controller
 {
+    use NotifiableTrait; 
     /**
      * Display a listing of the resource.
      */
@@ -34,12 +38,16 @@ class CommentaireController extends Controller
     public function store(StoreCommentaireRequest $request)
     {
         $commentaire = Commentaire::create($request->validated());
-    return response()->json([
-        'message' => 'Commentaire ajouté avec succès!',
-        'data' => $commentaire
-    ], 201);
-
+    
+        $users = User::all(); // Récupérer tous les utilisateurs
+        foreach ($users as $user) {
+            $this->addNotification($user->id, $commentaire->projet_id, "Un nouveau commentaire a été ajouté : " . $commentaire->contenu);
+        }
+    
+        return response()->json(["message" => "Commentaire ajouté avec succès!", "data" => $commentaire], 201);
     }
+    
+
 
    
     /**

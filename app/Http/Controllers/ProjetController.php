@@ -2,15 +2,19 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\Email;
+use App\Models\User;
 use App\Models\Projet;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
 use App\Http\Requests\StoreProjetRequest;
 use App\Http\Requests\UpdateProjetRequest;
-use App\Mail\Email;
-use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\Auth;
+
+use App\Traits\NotifiableTrait;
 
 class ProjetController extends Controller
 {
+    use NotifiableTrait; 
     /**
      * Display a listing of the resource.
      */
@@ -42,17 +46,20 @@ class ProjetController extends Controller
     
         $user = Auth::user();
     
-        // Vérifier si l'utilisateur a le rôle 'habitant'
         if ($user && $user->role_id === 3) { // Vérification basée sur role_id
-            // Récupérer les informations de l'habitant
             $habitant = $user->habitant;
-    
-            // Envoyer l'email
             Mail::to($user->email)->send(new Email($habitant, $projet->nom));
         }
     
+        // Ajouter une notification pour chaque utilisateur
+        $users = User::all(); // Récupérer tous les utilisateurs
+        foreach ($users as $user) {
+            $this->addNotification($user->id, $projet->id, "Un nouveau projet a été créé : " . $projet->nom);
+        }    
+    
         return self::customJsonResponse("Projet créé avec succès", $projet, 201);
     }
+    
     
 
     /**
@@ -85,12 +92,20 @@ class ProjetController extends Controller
     /**
      * Remove the specified resource from storage.
      */
+   
     public function destroy(Projet $projet)
     {
+        $users = User::all(); // Récupérer tous les utilisateurs
+        foreach ($users as $user) {
+            $this->addNotification($user->id, $projet->id, "Un projet a été supprimé : " . $projet->nom);
+        }
+    
         $projet->delete();
-        return $this->customJsonResponse("Projet supprimé avec succès", 204);
+    
+        return response()->json(["message" => "Projet supprimé avec succès"], 204);
     }
-
+    
+    
 
     
 }

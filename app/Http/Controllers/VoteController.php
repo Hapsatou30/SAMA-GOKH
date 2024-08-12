@@ -2,12 +2,16 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\StoreVoteRequest;
-use App\Http\Requests\UpdateVoteRequest;
+use App\Models\User;
 use App\Models\Vote;
+use App\Http\Requests\StoreVoteRequest;
+
+use App\Traits\NotifiableTrait;
+use App\Http\Requests\UpdateVoteRequest;
 
 class VoteController extends Controller
 {
+    use NotifiableTrait; 
     /**
      * Display a listing of the resource.
      */
@@ -28,10 +32,18 @@ class VoteController extends Controller
      * Store a newly created resource in storage.
      */
     public function store(StoreVoteRequest $request)
-    {
-        $vote = Vote::create($request->validated());
-        return $this->customJsonResponse("Vote ajouté avec succès", $vote, 201);
+{
+    $vote = Vote::create($request->validated());
+
+    $users = User::all(); // Récupérer tous les utilisateurs
+    foreach ($users as $user) {
+        $this->addNotification($user->id, $vote->projet_id, "Un nouveau vote a été ajouté.");
     }
+
+    return response()->json(["message" => "Vote ajouté avec succès", "data" => $vote], 201);
+}
+
+    
 
     /**
      * Display the specified resource.
