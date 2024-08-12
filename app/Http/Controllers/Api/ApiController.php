@@ -4,41 +4,19 @@ namespace App\Http\Controllers\Api;
 
 use App\Models\User;
 use App\Models\Habitant;
+use App\Models\Municipalite;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 
 class ApiController extends Controller
 {
-    //inscription
-    // public function register(Request $request)
-    // {
-    //     // Validation des données
-    //     $request->validate([
-    //         'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
-    //         'password' => ['required', 'string', 'min:8'],
-    //         'role_id' => ['required', 'exists:roles,id'], // Valider que le rôle existe
-    //     ]);
-
-    //     // Enregistrement des données
-    //     $user = User::create([
-    //         'email' => $request->email,
-    //         'password' => bcrypt($request->password),
-    //         'role_id' => $request->role_id, // Assigner le rôle à l'utilisateur
-    //     ]);
-
-    //     // Envoi du token d'authentification
-    //     $token = $user->createToken('authToken')->plainTextToken;
-
-    //     return response()->json([
-    //         "status" => true,
-    //         "message" => "Utilisateur enregistré avec succès",
-    //         "token" => $token,
-    //     ]);
-    // }
+   
     public function register(Request $request)
     {
         // Validation des données
-        $request->validate([
+        $validator = validator(
+            $request->all(),
+            [
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
             'password' => ['required', 'string', 'min:8'],
             'nom' => ['required', 'string'],
@@ -50,7 +28,13 @@ class ApiController extends Controller
             'photo' => ['nullable', 'string'],
             'profession' => ['required', 'string'],
             'numero_identite' => ['required', 'string'],
-        ]);
+            'municipalite_id' => ['required', 'integer', 'exists:municipalites,id'],
+            ]
+        );
+        // Si les données ne sont pas valides, renvoyer les erreurs
+        if ($validator->fails()) {
+            return response()->json(['error' => $validator->errors()], 422);
+        }
     
         // Création de l'utilisateur
         $user = User::create([
@@ -71,12 +55,14 @@ class ApiController extends Controller
             'photo' => $request->photo,
             'profession' => $request->profession,
             'numero_identite' => $request->numero_identite,
+            'municipalite_id' => $request->municipalite_id,
         ]);
         return response()->json([
             "status" => true,
             "message" => "Utilisateur enregistré avec succès"
         ]);
     }
+
     
     // connexion
     public function login(Request $request)
@@ -119,19 +105,43 @@ class ApiController extends Controller
     }
 
     // récupérer le profil utilisateur connecté
-    public function profile(){
-
-        //$userData = auth()->user();
-        $userData = request()->user();
-
+    public function profile()
+    {
+        // Récupérer l'utilisateur connecté
+        $user = auth()->user();
+    
+        // Récupérer les informations de l'habitant associé à cet utilisateur
+        $habitant = Habitant::where('user_id', $user->id)->first();
+    
+        // Vérifier si l'habitant existe
+        if (!$habitant) {
+            return response()->json([
+                "status" => false,
+                "message" => "Habitant non trouvé"
+            ], 404);
+        }
+    
+        // Retourner les informations de l'utilisateur et de l'habitant
         return response()->json([
             "status" => true,
-            "message" => "Données de profil",
-            "data" => $userData,
-            "user_id" => request()->user()->id,
-            "email" => request()->user()->email
+            "message" => "Données de profil récupérées avec succès",
+            "data" => [
+                "email" => $user->email,
+                "password" => $user->password, 
+                "nom" => $habitant->nom,
+                "prenom" => $habitant->prenom,
+                "telephone" => $habitant->telephone,
+                "adresse" => $habitant->adresse,
+                "sexe" => $habitant->sexe,
+                "date_naiss" => $habitant->date_naiss,
+                "photo" => $habitant->photo,
+                "profession" => $habitant->profession,
+                "numero_identite" => $habitant->numero_identite,
+                "municipalite_id" => $habitant->municipalite_id,
+            ]
         ]);
     }
+    
 
     // refresher le token d'authentification
     public function refreshToken(Request $request){

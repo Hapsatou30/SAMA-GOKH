@@ -17,7 +17,14 @@ class VoteController extends Controller
      */
     public function index()
     {
-        //
+        //nombre total de vote
+        $votes = Vote::all()->count();
+
+        // Retourner le nombre de votes en format JSON avec un message de succès
+        return response()->json([
+            'message' => 'Nombre total de votes',
+            'data' => $votes
+        ], 200);
     }
 
     /**

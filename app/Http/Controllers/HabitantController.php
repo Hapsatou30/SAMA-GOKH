@@ -13,7 +13,9 @@ class HabitantController extends Controller
      */
     public function index()
     {
-        //
+        //methode pour recuperer la liste des habitants
+        $habitants = Habitant::all();
+        return response()->json($habitants);
     }
 
     /**
@@ -53,7 +55,74 @@ class HabitantController extends Controller
      */
     public function update(UpdateHabitantRequest $request, Habitant $habitant)
     {
-        //
+           // Récupérer l'utilisateur connecté
+    $user = auth()->user();
+
+    // Récupérer l'habitant associé à cet utilisateur
+    $habitant = Habitant::where('user_id', $user->id)->first();
+
+    // Vérifier si l'habitant existe
+    if (!$habitant) {
+        return response()->json([
+            "status" => false,
+            "message" => "Habitant non trouvé"
+        ], 404);
+    }
+
+    // Validation des données de la requête
+    $validator = validator(
+        $request->all(),
+        [
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email,' . $user->id],
+            'password' => ['nullable', 'string', 'min:8'],
+            'nom' => ['required', 'string'],
+            'prenom' => ['required', 'string'],
+            'telephone' => ['required', 'string', 'unique:habitants,telephone,' . $habitant->id],
+            'adresse' => ['required', 'string'],
+            'sexe' => ['required', 'string'],
+            'date_naiss' => ['required', 'date'],
+            'photo' => ['nullable', 'string'],
+            'profession' => ['required', 'string'],
+            'numero_identite' => ['required', 'string'],
+        ]
+    );
+
+    // Si les données ne sont pas valides, renvoyer les erreurs
+    if ($validator->fails()) {
+        return response()->json(['error' => $validator->errors()], 422);
+    }
+
+    // Mettre à jour les informations de l'utilisateur
+    $user->email = $request->email;
+
+    // Si un nouveau mot de passe est fourni, le mettre à jour
+    if ($request->filled('password')) {
+        $user->password = bcrypt($request->password);
+    }
+
+    $user->save();
+
+    // Mettre à jour les informations de l'habitant
+    $habitant->update([
+        'nom' => $request->nom,
+        'prenom' => $request->prenom,
+        'telephone' => $request->telephone,
+        'adresse' => $request->adresse,
+        'sexe' => $request->sexe,
+        'date_naiss' => $request->date_naiss,
+        'photo' => $request->photo,
+        'profession' => $request->profession,
+        'numero_identite' => $request->numero_identite,
+    ]);
+
+    return response()->json([
+        "status" => true,
+        "message" => "Profil mis à jour avec succès",
+        "data" => [
+            "user" => $user,
+            "habitant" => $habitant
+        ]
+    ]);
     }
 
     /**

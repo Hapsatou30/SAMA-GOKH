@@ -27,17 +27,7 @@ class ProjetController extends Controller
     /**
      * Show the form for creating a new resource.
      */
-    /**
-     * Store a newly created resource in storage.
-     */
-    // public function store(StoreProjetRequest $request)
-    // {
-    //     $projet = new Projet();
-    //     $projet->fill($request->validated());
-    //     $projet->save();
-    //     return self::customJsonResponse("Projet créé avec succès", $projet, 201);
-
-    // }
+    
     public function store(StoreProjetRequest $request)
     {
         $projet = new Projet();

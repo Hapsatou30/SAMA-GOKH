@@ -58,7 +58,9 @@ class RolesPermissionsTableSeeder extends Seeder
         'Voir details un projet',
         'Approuver un projet',
         'desapprouver un projet',
-        'Modifier le statut d un projet'
+        'Modifier le statut d un projet',
+        'Modifier une municipalite',
+        'Voir details une municipalite'
     );
 
     $role = Role::create(['name' => 'habitant']);

@@ -21,6 +21,7 @@ return new class extends Migration
             $table->date('date_fin');
             $table->decimal('budget', 15, 2);
             $table->enum('etat', ['approuvé', 'rejeté']);
+            $table->string('photo')->nullable();
             $table->timestamps();
             $table->softDeletes();
         });

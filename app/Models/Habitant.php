@@ -15,6 +15,10 @@ class Habitant extends Model
         return $this->belongsTo(User::class);
     }
 
+    public function municipalite()
+    {
+        return $this->belongsTo(Municipalite::class);
+    }
 
     public function votes()
     {
