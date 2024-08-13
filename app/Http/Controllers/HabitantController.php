@@ -15,7 +15,11 @@ class HabitantController extends Controller
     {
         //methode pour recuperer la liste des habitants
         $habitants = Habitant::all();
-        return response()->json($habitants);
+        return response()->json([
+            'status' => true,
+            'message' => 'la liste des habitants',
+            'data' => $habitants
+        ]);
     }
 
     /**

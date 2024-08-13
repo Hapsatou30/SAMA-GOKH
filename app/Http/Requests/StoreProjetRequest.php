@@ -19,7 +19,6 @@ class StoreProjetRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'user_id' => 'required|exists:users,id',
             'nom' => 'required|string|max:255',
             'description' => 'required|string',
             'statut' => 'required|in:en-attente,en cours,terminé',

@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Models\Municipalite;
+use App\Mail\MunicipaliteCreated;
+use Illuminate\Support\Facades\Mail;
 use App\Http\Requests\StoreMunicipaliteRequest;
 use App\Http\Requests\UpdateMunicipaliteRequest;
 
@@ -62,6 +64,10 @@ class MunicipaliteController extends Controller
         $municipalite->departement = $request->departement;
         $municipalite->region = $request->region;
         $municipalite->save();
+
+         // Envoyer un email à la municipalité
+         Mail::to($request->email)->send(new MunicipaliteCreated($municipalite, $request->password));
+
     
         return response()->json([
             'status' => true,
@@ -87,44 +93,49 @@ class MunicipaliteController extends Controller
      * Update the specified resource in storage.
      */
     public function update(UpdateMunicipaliteRequest $request, Municipalite $municipalite)
-{
-    // Vérifier que l'utilisateur courant a le rôle avec ID 1
-    if (auth()->user()->role_id !== 1) {
-        return response()->json(['error' => 'Vous n\'avez pas l\'autorisation de mettre à jour cette commune.'], 403);
+    {
+        $currentUser = auth()->user();
+        
+        // Vérifier que l'utilisateur courant est soit un admin, soit la municipalité concernée
+        if ($currentUser->role_id !== 1 && $currentUser->id !== $municipalite->user_id) {
+            return response()->json(['error' => 'Vous n\'avez pas l\'autorisation de mettre à jour cette commune.'], 403);
+        }
+    
+        // Validation des données
+        $validator = validator(
+            $request->all(),
+            [
+                'nom_commune' => ['required', 'string', 'max:255', 'unique:municipalites,nom_commune,' . $municipalite->id],
+                'departement' => ['required', 'string'],
+                'region' => ['required', 'string'],
+                'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email,' . $municipalite->user_id],
+                'password' => ['sometimes', 'nullable', 'string', 'min:8'],
+            ]
+        );
+    
+        // Si les données ne sont pas valides, renvoyer les erreurs
+        if ($validator->fails()) {
+            return response()->json(['error' => $validator->errors()], 422);
+        }
+    
+        // Mettre à jour les informations de la municipalité
+        $municipalite->update($request->only('nom_commune', 'departement', 'region'));
+    
+        // Mettre à jour les informations de l'utilisateur uniquement si l'utilisateur courant est la municipalité concernée ou si c'est un admin
+        $user = $municipalite->user;
+        if ($currentUser->id === $user->id || $currentUser->role_id === 1) {
+            $user->update([
+                'email' => $request->email,
+                'password' => $request->filled('password') ? bcrypt($request->password) : $user->password,
+            ]);
+        }
+    
+        return response()->json([
+            'status' => true,
+            'message' => 'Les données de la commune ont été mises à jour avec succès'
+        ]);
     }
-
-    // Validation des données
-    $validator = validator(
-        $request->all(),
-        [
-            'nom_commune' => ['required', 'string', 'max:255', 'unique:municipalites,nom_commune,' . $municipalite->id],
-            'departement' => ['required', 'string'],
-            'region' => ['required', 'string'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email,' . $municipalite->user_id],
-            'password' => ['sometimes', 'nullable', 'string', 'min:8'],
-        ]
-    );
-
-    // Si les données ne sont pas valides, renvoyer les erreurs
-    if ($validator->fails()) {
-        return response()->json(['error' => $validator->errors()], 422);
-    }
-
-    // Mettre à jour les informations de la municipalité
-    $municipalite->update($request->only('nom_commune', 'departement', 'region'));
-
-    // Mettre à jour les informations de l'utilisateur
-    $municipalite->user->update([
-        'email' => $request->email,
-        'password' => $request->filled('password') ? bcrypt($request->password) : $municipalite->user->password,
-    ]);
-
-    return response()->json([
-        'status' => true,
-        'message' => 'Les donnéés de la commune sont mise à jour avec succès'
-    ]);
-}
-
+    
 
 
     /**

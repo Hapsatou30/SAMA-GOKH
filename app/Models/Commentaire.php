@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class Commentaire extends Model
 {
     use HasFactory;
-    protected $guarded=[];
+    protected $fillable = ['projet_id', 'habitant_id', 'contenu'];
 
     public function projet()
     {

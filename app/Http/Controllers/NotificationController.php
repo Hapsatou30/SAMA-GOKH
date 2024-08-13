@@ -10,23 +10,25 @@ use Illuminate\Support\Facades\Auth;
 class NotificationController extends Controller
 {
 
-    public function getUserNotifications()
+    public function getAllNotifications()
     {
-        $notifications = Notification::where('user_id', auth()->id())
+        // Obtenir l'ID de l'utilisateur connecté
+        $userId = Auth::id();
+        
+        // Récupérer toutes les notifications non lues pour l'utilisateur connecté
+        $notifications = Notification::where('user_id', $userId)
                                       ->where('statut', 'non-lue')
+                                      ->orderBy('created_at', 'desc') // Trier par date de création, les plus récentes en premier
                                       ->get();
-
-        return response()->json($notifications, 200);
+        
+        return response()->json([
+            'status' => true,
+            'data' => $notifications
+        ], 200);
     }
-    protected function addNotification($userId, $projetId, $contenu)
-    {
-        Notification::create([
-            'user_id' => $userId,
-            'projet_id' => $projetId,
-            'contenu' => $contenu,
-            'statut' => 'non-lue'
-        ]);
-    }
+    
+    
+    
 
     public function markAsRead($id)
     {
