@@ -23,6 +23,7 @@ return new class extends Migration
             $table->string('photo')->nullable();
             $table->string('profession');
             $table->string('numero_identite')->unique();
+            $table->string('image_cni');
             $table->foreignId('municipalite_id')->constrained('municipalites')->onDelete('cascade');
             $table->timestamps();
         });
