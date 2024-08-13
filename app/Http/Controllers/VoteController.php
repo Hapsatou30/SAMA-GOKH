@@ -18,18 +18,20 @@ class VoteController extends Controller
      * Display a listing of the resource.
      */
     public function index()
-{
-    // Récupérer le nombre de votes par projet
-    $votesParProjet = Vote::select('projet_id', DB::raw('count(*) as total_votes'))
-                          ->groupBy('projet_id')
-                          ->get();
-
-    // Retourner les données en format JSON avec un message de succès
-    return response()->json([
-        'message' => 'Nombre de votes par projet',
-        'data' => $votesParProjet
-    ], 200);
-}
+    {
+        // Récupérer le nombre de votes ayant le statut 'pou' par projet
+        $votesParProjet = Vote::select('projet_id', DB::raw('count(*) as total_votes'))
+                              ->where('statut', 'pour')  // Filtrer par statut 'pou'
+                              ->groupBy('projet_id')
+                              ->get();
+    
+        // Retourner les données en format JSON avec un message de succès
+        return response()->json([
+            'message' => 'Nombre de votes (statut pou) par projet',
+            'data' => $votesParProjet
+        ], 200);
+    }
+    
 
 
     /**

@@ -23,7 +23,410 @@
         "multipart/form-data"
     ],
     "paths": {
+        "/api/municipalites/{municipalite}": {
+            "delete": {
+                "summary": "Supprimer une municipalite",
+                "description": "",
+                "responses": {
+                    "204": {
+                        "description": "Deleted successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {},
+                                "example": ""
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "content": {
+                            "application/json": {
+                                "schema": {},
+                                "example": ""
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "content": {
+                            "application/json": {
+                                "schema": {},
+                                "example": ""
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "content": {
+                            "application/json": {
+                                "schema": {},
+                                "example": ""
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "Municipalité"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "municipalite",
+                        "type": "string"
+                    },
+                    {
+                        "in": "header",
+                        "name": "User-Agent",
+                        "type": "string"
+                    }
+                ]
+            },
+            "put": {
+                "summary": "Modifier une municipalité",
+                "description": "",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {},
+                                "example": ""
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "content": {
+                            "application/json": {
+                                "schema": {},
+                                "example": ""
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {},
+                                "example": ""
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "Municipalité"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "municipalite",
+                        "type": "string"
+                    },
+                    {
+                        "in": "header",
+                        "name": "User-Agent",
+                        "type": "string"
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "email": {
+                                        "type": "string"
+                                    },
+                                    "password": {
+                                        "type": "string"
+                                    },
+                                    "nom_commune": {
+                                        "type": "string"
+                                    },
+                                    "departement": {
+                                        "type": "string"
+                                    },
+                                    "region": {
+                                        "type": "string"
+                                    }
+                                }
+                            },
+                            "example": {
+                                "email": "hapsthiam@gmail.com",
+                                "password": "password2",
+                                "nom_commune": "Pikine",
+                                "departement": "Dakar",
+                                "region": "Dakar"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/municipalites": {
+            "post": {
+                "summary": "Ajouter une municipalité",
+                "description": "",
+                "responses": {
+                    "201": {
+                        "description": "Created successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {},
+                                "example": ""
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "content": {
+                            "application/json": {
+                                "schema": {},
+                                "example": ""
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "content": {
+                            "application/json": {
+                                "schema": {},
+                                "example": ""
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "content": {
+                            "application/json": {
+                                "schema": {},
+                                "example": ""
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "Municipalité"
+                ],
+                "parameters": [
+                    {
+                        "in": "header",
+                        "name": "User-Agent",
+                        "type": "string"
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "email": {
+                                        "type": "string"
+                                    },
+                                    "password": {
+                                        "type": "string"
+                                    },
+                                    "nom_commune": {
+                                        "type": "string"
+                                    },
+                                    "departement": {
+                                        "type": "string"
+                                    },
+                                    "region": {
+                                        "type": "string"
+                                    }
+                                }
+                            },
+                            "example": {
+                                "email": "hapsthiam@gmail1.com",
+                                "password": "password",
+                                "nom_commune": "Pikine1",
+                                "departement": "Dakar",
+                                "region": "Dakar"
+                            }
+                        }
+                    }
+                }
+            },
+            "get": {
+                "summary": "Liste municipalités",
+                "description": "",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {},
+                                "example": ""
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "content": {
+                            "application/json": {
+                                "schema": {},
+                                "example": ""
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {},
+                                "example": ""
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "Municipalité"
+                ],
+                "parameters": [
+                    {
+                        "in": "header",
+                        "name": "User-Agent",
+                        "type": "string"
+                    }
+                ]
+            }
+        },
+        "/api/notifications": {
+            "get": {
+                "summary": "Liste des notifications",
+                "description": "",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {},
+                                "example": ""
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "content": {
+                            "application/json": {
+                                "schema": {},
+                                "example": ""
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {},
+                                "example": ""
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "Notiifcation"
+                ],
+                "parameters": [
+                    {
+                        "in": "header",
+                        "name": "User-Agent",
+                        "type": "string"
+                    }
+                ]
+            }
+        },
+        "/api/habitants": {
+            "get": {
+                "summary": "New Request",
+                "description": "",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {},
+                                "example": ""
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "content": {
+                            "application/json": {
+                                "schema": {},
+                                "example": ""
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {},
+                                "example": ""
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "Habitant"
+                ],
+                "parameters": [
+                    {
+                        "in": "header",
+                        "name": "User-Agent",
+                        "type": "string"
+                    }
+                ]
+            }
+        },
         "/api/votes": {
+            "get": {
+                "summary": "le nombre de vote par projet",
+                "description": "",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {},
+                                "example": ""
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "content": {
+                            "application/json": {
+                                "schema": {},
+                                "example": ""
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {},
+                                "example": ""
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "VOTE"
+                ],
+                "parameters": [
+                    {
+                        "in": "header",
+                        "name": "User-Agent",
+                        "type": "string"
+                    }
+                ]
+            },
             "post": {
                 "summary": "Ajouter une vote",
                 "description": "",
@@ -84,9 +487,6 @@
                                     "projet_id": {
                                         "type": "integer"
                                     },
-                                    "habitant_id": {
-                                        "type": "integer"
-                                    },
                                     "statut": {
                                         "type": "string"
                                     }
@@ -94,7 +494,6 @@
                             },
                             "example": {
                                 "projet_id": 2,
-                                "habitant_id": 1,
                                 "statut": "pour"
                             }
                         }
@@ -216,9 +615,6 @@
                                     "projet_id": {
                                         "type": "integer"
                                     },
-                                    "habitant_id": {
-                                        "type": "integer"
-                                    },
                                     "contenu": {
                                         "type": "string"
                                     }
@@ -226,8 +622,7 @@
                             },
                             "example": {
                                 "projet_id": 2,
-                                "habitant_id": 1,
-                                "contenu": "Ce projet est est  est très important pour notre communauté. Je suis entièrement d'accord avec les objectifs proposés et j'espère que la rénovation sera effectuée dans les délais prévus."
+                                "contenu": "Ce travail est très important pour notre communauté. Je suis entièrement d'accord avec les objectifs proposés et j'espère que la rénovation sera effectuée dans les délais prévus."
                             }
                         }
                     }
@@ -295,9 +690,6 @@
                                     "projet_id": {
                                         "type": "integer"
                                     },
-                                    "habitant_id": {
-                                        "type": "integer"
-                                    },
                                     "contenu": {
                                         "type": "string"
                                     }
@@ -305,7 +697,6 @@
                             },
                             "example": {
                                 "projet_id": 2,
-                                "habitant_id": 1,
                                 "contenu": "Ce projet est très important pour notre communauté. Je suis entièrement d'accord avec les objectifs proposés et j'espère que la rénovation sera effectuée dans les délais prévus."
                             }
                         }
@@ -495,7 +886,7 @@
                             },
                             "example": {
                                 "user_id": 1,
-                                "nom": "Rénovation du Parc Central",
+                                "nom": "Rénovation du Parc Central de hann",
                                 "description": "Projet visant à rénover les infrastructures du Parc Central, y compris la mise à jour des équipements de jeux et l'amélioration des espaces verts.",
                                 "statut": "en-attente",
                                 "date_debut": "2024-09-01",
@@ -614,9 +1005,6 @@
                             "schema": {
                                 "type": "object",
                                 "properties": {
-                                    "user_id": {
-                                        "type": "integer"
-                                    },
                                     "nom": {
                                         "type": "string"
                                     },
@@ -641,13 +1029,12 @@
                                 }
                             },
                             "example": {
-                                "user_id": 1,
-                                "nom": "Construction d'une lycée",
-                                "description": "Ce projet vise à construire une école primaire pour les enfants de la communauté.",
-                                "statut": "en cours",
-                                "date_debut": "2024-12-01",
-                                "date_fin": "2026-12-01",
-                                "budget": "15000000.00",
+                                "nom": "Journée de reboisement",
+                                "description": "Projet visant à rénover les infrastructures du Parc Central, y compris la mise à jour des équipements de jeux et l'amélioration des espaces verts.",
+                                "statut": "en-attente",
+                                "date_debut": "2024-09-01",
+                                "date_fin": "2025-10-30",
+                                "budget": "5000000.00",
                                 "etat": "approuvé"
                             }
                         }
@@ -698,9 +1085,9 @@
                 ]
             }
         },
-        "/api/refresh": {
+        "/api/profile": {
             "get": {
-                "summary": "Rafraichir le token",
+                "summary": "Données de profil",
                 "description": "",
                 "responses": {
                     "200": {
@@ -743,9 +1130,9 @@
                 ]
             }
         },
-        "/api/profile": {
+        "/api/refresh": {
             "get": {
-                "summary": "Données de profil",
+                "summary": "Rafraichir le token",
                 "description": "",
                 "responses": {
                     "200": {
@@ -900,7 +1287,7 @@
                                 }
                             },
                             "example": {
-                                "email": "bachir@gmail.com",
+                                "email": "hapsatou.thiam@univ-thies.sn",
                                 "password": "hapsatou"
                             }
                         }
@@ -998,21 +1385,37 @@
                                     },
                                     "numero_identite": {
                                         "type": "string"
+                                    },
+                                    "image_cni": {
+                                        "type": "string",
+                                        "format": "binary"
+                                    },
+                                    "municipalite_id": {
+                                        "type": "string"
+                                    },
+                                    "": {
+                                        "type": "string"
                                     }
                                 }
                             },
                             "example": {
-                                "email": "bachir@gmail.com",
+                                "email": "hapsatou.thiam@univ-thies.sn",
                                 "password": "hapsatou",
-                                "nom": "Lo",
-                                "prenom": "Bachir",
-                                "telephone": "+22112345678",
-                                "adresse": "123 Rue des Fleurs, Dakar",
+                                "nom": "sagna",
+                                "prenom": "moussa",
+                                "telephone": "1234567891",
+                                "adresse": "123 Main St",
                                 "sexe": "M",
-                                "date_naiss": "1990-05-15",
+                                "date_naiss": "1990-01-01",
                                 "photo": "",
-                                "profession": "Ingénieur",
-                                "numero_identite": "ID123456789"
+                                "profession": "Engineer",
+                                "numero_identite": "2 619 2001 01380",
+                                "image_cni": {
+                                    "type": "string",
+                                    "format": "binary"
+                                },
+                                "municipalite_id": "1",
+                                "": ""
                             }
                         }
                     }
