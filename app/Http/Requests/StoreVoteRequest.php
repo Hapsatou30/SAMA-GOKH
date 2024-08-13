@@ -25,7 +25,6 @@ class StoreVoteRequest extends FormRequest
     {
         return [
             'projet_id' => ['required', 'exists:projets,id'],
-            'habitant_id' => ['required', 'exists:habitants,id'],
             'statut' => ['required', 'in:pour,contre'],
         ];
     }

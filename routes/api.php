@@ -4,8 +4,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\VoteController;
 use App\Http\Controllers\ProjetController;
-
 use App\Http\Controllers\Api\ApiController;
+
+use App\Http\Controllers\HabitantController;
 use App\Http\Controllers\CommentaireController;
 
 use App\Http\Controllers\MunicipaliteController;
@@ -29,8 +30,11 @@ Route::group([
     // Route pour les projets.
 Route::apiResource('projets', ProjetController::class);
 
+    // Route pour les habitants
+    Route::apiResource('habitants', HabitantController::class);
+
 // Route pour vote
-Route::apiResource('votes', VoteController::class)->only('store');
+Route::apiResource('votes', VoteController::class);
 
 //route pour les municipalities
     Route::apiResource('municipalites', MunicipaliteController::class);
@@ -47,7 +51,7 @@ Route::apiResource('commentaires', CommentaireController::class);
 });
 
 // Route pour les notifications
-Route::get('notifications', [NotificationController::class, 'getUserNotifications']);
+Route::get('notifications', [NotificationController::class, 'getAllNotifications']);
 Route::middleware('auth:sanctum')->post('notifications/{id}/read', [NotificationController::class, 'markAsRead']);
 
 

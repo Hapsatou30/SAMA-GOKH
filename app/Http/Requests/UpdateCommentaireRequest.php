@@ -9,10 +9,7 @@ class UpdateCommentaireRequest extends FormRequest
     /**
      * Determine if the user is authorized to make this request.
      */
-    public function authorize(): bool
-    {
-        return true;
-    }
+    
 
     /**
      * Get the validation rules that apply to the request.
@@ -23,7 +20,6 @@ class UpdateCommentaireRequest extends FormRequest
     {
         return [
             'projet_id' => 'required|exists:projets,id',
-            'habitant_id' => 'required|exists:habitants,id',
             'contenu' => 'required|string|max:500',
         ];
     }
