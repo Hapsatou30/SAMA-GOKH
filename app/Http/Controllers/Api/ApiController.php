@@ -22,46 +22,43 @@ class ApiController extends Controller
                 'password' => ['required', 'string', 'min:8'],
                 'nom' => ['required', 'string'],
                 'prenom' => ['required', 'string'],
-                'telephone' => ['required', 'string', 'unique:habitants'],
+                'telephone' => ['required', 'string', 'unique:habitants', 'regex:/^\d{2}\s?\d{3}\s?\d{2}\s?\d{2}$/'],
                 'adresse' => ['required', 'string'],
                 'sexe' => ['required', 'string'],
-                'date_naiss' => ['required', 'date'],
-                'photo' => ['nullable', 'string'],
+                'date_naiss' => ['required', 'date', 'before:2006-01-01'],
+                'photo' => ['nullable', 'file', 'image', 'max:2048'],
                 'profession' => ['required', 'string'],
                 'numero_identite' => ['required', 'string'],
                 'image_cni' => ['required', 'file', 'image', 'max:2048'],
                 'municipalite_id' => ['required', 'integer', 'exists:municipalites,id'],
             ]
         );
-
+    
         // Si les données ne sont pas valides, renvoyer les erreurs
         if ($validator->fails()) {
             return response()->json(['error' => $validator->errors()], 422);
         }
-
+    
         $image_cni = $request->file('image_cni');
-
+        $photo = $request->file('photo');
+    
         // Vérifier s'il y a un fichier pour l'image CNI
         if ($image_cni) {
-            // Chemin temporaire du fichier
             $imagePath = $image_cni->getRealPath();
             $apiKey = env('OCR_SPACE_API_KEY');
             $url = 'https://api.ocr.space/parse/image';
-
-            // Effectuer la requête à l'API OCR Space
+    
             $response = Http::attach('file', file_get_contents($imagePath), $image_cni->getClientOriginalName())
                             ->post($url, [
                                 'apikey' => $apiKey,
                                 'language' => 'eng',
                             ]);
-
+    
             $data = $response->json();
-
-            // Vérifier la présence de texte dans la réponse
+    
             if (isset($data['ParsedResults'][0]['ParsedText'])) {
                 $extractedText = trim($data['ParsedResults'][0]['ParsedText']);
                 
-                // Comparer le texte extrait avec le numéro d'identité
                 if (strcasecmp($extractedText, $request->numero_identite) !== 0) {
                     return response()->json(['error' => 'Le numéro d\'identité extrait ne correspond pas.'], 422);
                 }
@@ -69,14 +66,18 @@ class ApiController extends Controller
                 return response()->json(['error' => 'Erreur de traitement de l\'image.'], 500);
             }
         }
-
+    
+        // Stocker les fichiers
+        $photoPath = $photo ? $photo->store('photos', 'public') : null;
+        $imageCniPath = $image_cni ? $image_cni->store('images', 'public') : null;
+    
         // Création de l'utilisateur
         $user = User::create([
             'email' => $request->email,
             'password' => bcrypt($request->password),
             'role_id' => 3, // Assigner le rôle d'habitant
         ]);
-
+    
         // Création de l'habitant
         $habitant = Habitant::create([
             'user_id' => $user->id,
@@ -86,19 +87,19 @@ class ApiController extends Controller
             'adresse' => $request->adresse,
             'sexe' => $request->sexe,
             'date_naiss' => $request->date_naiss,
-            'photo' => $request->photo,
+            'photo' => $photoPath,
             'profession' => $request->profession,
             'numero_identite' => $request->numero_identite,
-            'image_cni' => $request->image_cni ? $request->file('image_cni')->store('images') : null,
+            'image_cni' => $imageCniPath,
             'municipalite_id' => $request->municipalite_id,
         ]);
-
+    
         return response()->json([
             "status" => true,
             "message" => "Utilisateur enregistré avec succès"
         ]);
     }
-
+    
     
     // connexion
     public function login(Request $request)

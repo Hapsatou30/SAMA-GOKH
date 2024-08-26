@@ -22,6 +22,20 @@ class HabitantController extends Controller
         ]);
     }
 
+    
+
+    public function habitantsByCommune($municipaliteId)
+    {
+        // Récupérer les habitants en fonction de l'identifiant de la municipalité
+        $habitants = Habitant::where('municipalite_id', $municipaliteId)->get();
+    
+        return response()->json([
+            'status' => true,
+            'message' => 'La liste des habitants de la commune',
+            'data' => $habitants
+        ]);
+    }
+
     /**
      * Show the form for creating a new resource.
      */
@@ -43,8 +57,25 @@ class HabitantController extends Controller
      */
     public function show(Habitant $habitant)
     {
-        //
+        try {
+            // Charger l'utilisateur associé pour récupérer l'email
+            $habitant->load('user');
+    
+            return response()->json([
+                'status' => true,
+                'message' => 'Détails de l\'habitant récupérés avec succès.',
+                'data' => $habitant
+            ], 200);
+        } catch (\Exception $e) {
+            // Gérer les erreurs potentielles
+            return response()->json([
+                'status' => false,
+                'message' => 'Erreur lors de la récupération des détails de l\'habitant.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
+    
 
     /**
      * Show the form for editing the specified resource.

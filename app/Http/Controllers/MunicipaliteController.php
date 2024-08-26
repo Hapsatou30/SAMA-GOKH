@@ -21,6 +21,19 @@ class MunicipaliteController extends Controller
         return response()->json($municipalites);
     }
 
+    public function getCommunesByRegion($region)
+{
+    // Récupérer toutes les communes de la région spécifiée
+    $municipalites = Municipalite::where('region', $region)->get();
+
+    // Vérifier s'il y a des résultats
+    if ($municipalites->isEmpty()) {
+        return response()->json(['message' => 'Aucune commune trouvée pour cette région.'], 404);
+    }
+
+    // Retourner la liste des communes
+    return response()->json($municipalites);
+}
 
 
     /**
@@ -83,10 +96,14 @@ class MunicipaliteController extends Controller
      */
     public function show(Municipalite $municipalite)
     {
-        //voir les informations pour une commune
-        return response()->json($municipalite);
+        return response()->json([
+            'nom_commune' => $municipalite->nom_commune,
+            'email' => $municipalite->user->email,  // Assurez-vous que la relation est correcte
+            'departement' => $municipalite->departement,
+            'region' => $municipalite->region,
+        ]);
     }
-
+    
 
 
     /**
@@ -143,38 +160,71 @@ class MunicipaliteController extends Controller
      */
     public function destroy(Municipalite $municipalite)
     {
-        // Vérifier que l'utilisateur courant a le rôle avec ID 1
+        // Vérifiez les permissions de l'utilisateur
         if (auth()->user()->role_id !== 1) {
             return response()->json(['error' => 'Vous n\'avez pas l\'autorisation de supprimer cette commune.'], 403);
         }
     
-        // Supprimer l'utilisateur associé
-        $municipalite->user->delete();
+        try {
+            // Supprimer l'utilisateur associé si nécessaire
+            if ($municipalite->user) {
+                $municipalite->user->delete();
+            }
     
-        // Supprimer la commune
-        $municipalite->delete();
+            // Supprimer la commune
+            $municipalite->delete();
     
-        // Retourner une réponse JSON avec un message de succès
-        return response()->json([
-            'status' => true,
-            'message' => 'Commune supprimée avec succès'
-        ], 200);
+            return response()->json([
+                'status' => true,
+                'message' => 'Commune supprimée avec succès'
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Une erreur est survenue lors de la suppression.'], 500);
+        }
     }
     
 
-    //profil d'une municipalite
-    public function profile(Municipalite $municipalite)
+     /**
+     * Récupérer les informations de la municipalité connectée.
+     */
+    public function getMunicipaliteConnectee()
     {
-        // Charger les informations de l'utilisateur associé
-        $municipalite->load('user');
+        // Récupérer l'utilisateur connecté
+        $user = auth()->user();
 
-        // Retourner les détails de la municipalité avec les informations de l'utilisateur
+        // Vérifier que l'utilisateur est bien associé à une municipalité
+        $municipalite = Municipalite::where('user_id', $user->id)->first();
+
+        if (!$municipalite) {
+            return response()->json(['error' => 'Aucune municipalité associée à cet utilisateur.'], 404);
+        }
+
+        // Retourner les informations de la municipalité
         return response()->json([
-            'municipalite' => $municipalite,
-            'user' => [
-                'email' => $municipalite->user->email,
-                'password' => $municipalite->user->password, // Le mot de passe sera hashé
-            ]
+            'nom_commune' => $municipalite->nom_commune,
+            'email' => $user->email,
+            'departement' => $municipalite->departement,
+            'region' => $municipalite->region,
         ]);
     }
+
+ 
+public function getHabitantsConnecte()
+{
+    // Récupérer l'utilisateur connecté
+    $user = auth()->user();
+    
+    // Récupérer la municipalité associée à l'utilisateur
+    $municipalite = Municipalite::where('user_id', $user->id)->first();
+    
+    if (!$municipalite) {
+        return response()->json(['error' => 'Aucune municipalité associée à cet utilisateur.'], 404);
+    }
+    
+    // Inclure les informations de l'utilisateur avec les habitants
+    $habitants = $municipalite->habitants()->with('user')->get();
+
+    return response()->json($habitants);
+}
+
 }
