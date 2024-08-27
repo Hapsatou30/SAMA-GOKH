@@ -163,6 +163,7 @@ class ApiController extends Controller
             "status" => true,
             "message" => "Données de profil récupérées avec succès",
             "data" => [
+                "id" => $user->id,  // id de l'utilisateur
                 "email" => $user->email,
                 "password" => $user->password, 
                 "nom" => $habitant->nom,

@@ -5,12 +5,14 @@ namespace App\Http\Controllers;
 use App\Mail\Email;
 use App\Models\User;
 use App\Models\Projet;
+use App\Models\Municipalite;
 use App\Traits\NotifiableTrait;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use App\Http\Requests\StoreProjetRequest;
-
+use App\Models\Habitant;
 use App\Http\Requests\UpdateProjetRequest;
 
 class ProjetController extends Controller
@@ -24,22 +26,28 @@ class ProjetController extends Controller
         // Obtenir l'utilisateur connecté
         $user = auth()->user();
     
-        // Récupérer l'ID de la municipalité
-        $municipaliteId = $user->habitants ? $user->habitants->municipalite_id : ($user->municipalite ? $user->municipalite->id : null);
+        // Vérifier si l'utilisateur a une municipalité associée
+        $municipalite = $user->municipalites;
     
-        // Récupérer les projets associés
-        $projets = Projet::where('user_id', $user->id) // Projets créés par l'utilisateur connecté
-                         ->orWhereIn('user_id', function ($query) use ($municipaliteId) {
-                             $query->select('id')
-                                   ->from('users')
-                                   ->whereIn('id', function ($subQuery) use ($municipaliteId) {
-                                       $subQuery->select('user_id')
-                                                ->from('habitants')
-                                                ->where('municipalite_id', $municipaliteId);
-                                   });
-                         })
+        if (!$municipalite) {
+            return response()->json([
+                'status' => false,
+                'message' => 'L\'utilisateur connecté n\'est pas associé à une municipalité.',
+            ], 403);
+        }
+    
+        // Récupérer l'ID de la municipalité de l'utilisateur connecté
+        $municipaliteId = $municipalite->id;
+    
+        // Récupérer les IDs des utilisateurs qui sont des habitants de cette municipalité
+        $habitantUserIds = Habitant::where('municipalite_id', $municipaliteId)->pluck('user_id');
+    
+        // Inclure également les projets créés par la municipalité
+        $projets = Projet::whereIn('user_id', $habitantUserIds)
+                         ->orWhere('user_id', $municipalite->user_id)
                          ->get();
     
+        // Retourner les projets trouvés avec une réponse 200
         return response()->json([
             'status' => true,
             'message' => 'La liste des projets pour la municipalité connectée',
@@ -47,7 +55,41 @@ class ProjetController extends Controller
         ]);
     }
     
+    
+    public function getProjetsByMunicipalite($municipaliteId)
+{
+    try {
+        // Récupérer la municipalité en fonction de l'ID fourni
+        $municipalite = Municipalite::findOrFail($municipaliteId);
 
+        // Récupérer les IDs des utilisateurs qui sont des habitants de cette municipalité
+        $habitantUserIds = $municipalite->habitants()->pluck('user_id');
+
+        // Récupérer tous les projets qui appartiennent soit aux habitants de la municipalité,
+        // soit à la municipalité elle-même
+        $projets = Projet::whereIn('user_id', $habitantUserIds) // Projets créés par les habitants
+                         ->orWhere('user_id', $municipalite->user_id) // Projets créés par la municipalité
+                         ->get();
+
+        // Vérifier si des projets ont été trouvés
+        if ($projets->isEmpty()) {
+            // Retourner une réponse 404 si aucun projet n'est trouvé
+            return response()->json(['message' => 'Aucun projet trouvé pour cette municipalité'], 404);
+        }
+
+        // Retourner les projets trouvés avec une réponse 200
+        return response()->json(['data' => $projets], 200);
+    } catch (\Exception $e) {
+        // En cas d'erreur, loguer l'erreur pour débogage
+        Log::error('Erreur lors de la récupération des projets par municipalité: ' . $e->getMessage());
+
+        // Retourner une réponse 500 avec un message générique
+        return response()->json(['error' => 'Erreur serveur, veuillez réessayer plus tard.'], 500);
+    }
+}
+
+
+    
     /**
      * Show the form for creating a new resource.
      */
@@ -95,7 +137,28 @@ class ProjetController extends Controller
 }
 
     
-    
+        public function getProjetsByMunicipaliteForConnectedHabitant()
+    {
+        // Récupérer l'habitant connecté
+        $habitant = Auth::user()->habitant;
+
+        if (!$habitant) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Habitant non trouvé pour l\'utilisateur connecté.',
+            ], 404);
+        }
+
+        // Récupérer les projets associés à la municipalité de l'habitant
+        $projets = Projet::where('municipalite_id', $habitant->municipalite_id)->get();
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Liste des projets récupérée avec succès.',
+            'data' => $projets
+        ]);
+    }
+
 
     /**
      * Display the specified resource.

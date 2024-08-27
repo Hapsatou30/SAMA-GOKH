@@ -25,7 +25,7 @@ class StoreProjetRequest extends FormRequest
             'date_debut' => ['required', 'date', 'after_or_equal:today'],
             'date_fin' => ['required', 'date', 'after_or_equal:date_debut'],
             'budget' => 'required|numeric|min:0',
-            'etat' => 'required|in:approuvé,rejeté',
+            'etat' => 'nullable|in:approuvé,rejeté',
         ];
     }
 

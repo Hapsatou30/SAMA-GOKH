@@ -191,22 +191,24 @@ class MunicipaliteController extends Controller
     {
         // Récupérer l'utilisateur connecté
         $user = auth()->user();
-
+    
         // Vérifier que l'utilisateur est bien associé à une municipalité
         $municipalite = Municipalite::where('user_id', $user->id)->first();
-
+    
         if (!$municipalite) {
             return response()->json(['error' => 'Aucune municipalité associée à cet utilisateur.'], 404);
         }
-
-        // Retourner les informations de la municipalité
+    
+        // Retourner les informations de la municipalité avec l'ID inclus
         return response()->json([
+            'id' => $municipalite->id, // Ajout de l'ID
             'nom_commune' => $municipalite->nom_commune,
             'email' => $user->email,
             'departement' => $municipalite->departement,
             'region' => $municipalite->region,
         ]);
     }
+    
 
  
 public function getHabitantsConnecte()

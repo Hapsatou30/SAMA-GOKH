@@ -29,6 +29,8 @@ Route::group([
 ], function(){
     // Route pour les projets.
 Route::apiResource('projets', ProjetController::class);
+Route::get('/projets/municipalite/{municipaliteId}', [ProjetController::class, 'getProjetsByMunicipalite']);
+
 
     // Route pour les habitants
     Route::apiResource('habitants', HabitantController::class);
@@ -37,6 +39,9 @@ Route::apiResource('projets', ProjetController::class);
 
 // Route pour vote
 Route::apiResource('votes', VoteController::class);
+// Ajouter cette ligne dans le fichier routes/api.php
+Route::get('votes/user/{projetId}/{userId}', [VoteController::class, 'userVote']);
+
 
 //route pour les municipalities
 // Route::apiResource('municipalites', MunicipaliteController::class);
