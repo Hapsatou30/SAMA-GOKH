@@ -30,6 +30,9 @@ Route::group([
     // Route pour les projets.
 Route::apiResource('projets', ProjetController::class);
 Route::get('/projets/municipalite/{municipaliteId}', [ProjetController::class, 'getProjetsByMunicipalite']);
+Route::get('/projets/habitant/{id}', [ProjetController::class, 'getProjetsByHabitant']);
+Route::put('/projets/{id}/etat', [ProjetController::class, 'updateEtat']);
+
 
 
     // Route pour les habitants
@@ -41,6 +44,8 @@ Route::get('/projets/municipalite/{municipaliteId}', [ProjetController::class, '
 Route::apiResource('votes', VoteController::class);
 // Ajouter cette ligne dans le fichier routes/api.php
 Route::get('votes/user/{projetId}/{userId}', [VoteController::class, 'userVote']);
+Route::get('votes/contre', [VoteController::class, 'getVotesContre']);
+
 
 
 //route pour les municipalities
@@ -84,5 +89,4 @@ Route::get('/municipalite/habitants', [MunicipaliteController::class, 'getHabita
 // Route pour les notifications
 Route::get('notifications', [NotificationController::class, 'getAllNotifications']);
 Route::middleware('auth:sanctum')->post('notifications/{id}/read', [NotificationController::class, 'markAsRead']);
-
-
+Route::delete('/notifications/{id}', [NotificationController::class, 'deleteNotification']);

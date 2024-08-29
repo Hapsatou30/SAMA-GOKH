@@ -44,5 +44,16 @@ class NotificationController extends Controller
         return response()->json(['message' => 'Notification non trouvée ou accès refusé'], 404);
     }
     
+    public function deleteNotification($id)
+    {
+        $notification = Notification::find($id);
 
+        if ($notification && $notification->user_id == auth()->id()) {
+            $notification->delete();
+
+            return response()->json(['message' => 'Notification supprimée'], 200);
+        }
+
+        return response()->json(['message' => 'Notification non trouvée ou accès refusé'], 404);
+    }
 }

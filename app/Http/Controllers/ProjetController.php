@@ -5,14 +5,16 @@ namespace App\Http\Controllers;
 use App\Mail\Email;
 use App\Models\User;
 use App\Models\Projet;
+use App\Models\Habitant;
 use App\Models\Municipalite;
+use Illuminate\Http\Request;
+use App\Mail\ProjetEtatChange;
 use App\Traits\NotifiableTrait;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use App\Http\Requests\StoreProjetRequest;
-use App\Models\Habitant;
 use App\Http\Requests\UpdateProjetRequest;
 
 class ProjetController extends Controller
@@ -57,37 +59,41 @@ class ProjetController extends Controller
     
     
     public function getProjetsByMunicipalite($municipaliteId)
-{
-    try {
-        // Récupérer la municipalité en fonction de l'ID fourni
-        $municipalite = Municipalite::findOrFail($municipaliteId);
-
-        // Récupérer les IDs des utilisateurs qui sont des habitants de cette municipalité
-        $habitantUserIds = $municipalite->habitants()->pluck('user_id');
-
-        // Récupérer tous les projets qui appartiennent soit aux habitants de la municipalité,
-        // soit à la municipalité elle-même
-        $projets = Projet::whereIn('user_id', $habitantUserIds) // Projets créés par les habitants
-                         ->orWhere('user_id', $municipalite->user_id) // Projets créés par la municipalité
-                         ->get();
-
-        // Vérifier si des projets ont été trouvés
-        if ($projets->isEmpty()) {
-            // Retourner une réponse 404 si aucun projet n'est trouvé
-            return response()->json(['message' => 'Aucun projet trouvé pour cette municipalité'], 404);
+    {
+        try {
+            // Récupérer la municipalité en fonction de l'ID fourni
+            $municipalite = Municipalite::findOrFail($municipaliteId);
+    
+            // Récupérer les IDs des utilisateurs qui sont des habitants de cette municipalité
+            $habitantUserIds = $municipalite->habitants()->pluck('user_id');
+    
+            // Récupérer tous les projets qui appartiennent soit aux habitants de la municipalité,
+            // soit à la municipalité elle-même, et dont l'état est différent de "rejeté"
+            $projets = Projet::where(function($query) use ($habitantUserIds, $municipalite) {
+                $query->whereIn('user_id', $habitantUserIds) // Projets créés par les habitants
+                      ->orWhere('user_id', $municipalite->user_id) // Projets créés par la municipalité
+                      ->where('etat', '!=', 'rejeté'); // Filtrer pour exclure les projets avec état "rejeté"
+            })
+            ->where('etat', 'approuvé') // Filtrer pour inclure uniquement les projets avec état "approuvé"
+            ->get();
+    
+            // Vérifier si des projets ont été trouvés
+            if ($projets->isEmpty()) {
+                // Retourner une réponse 404 si aucun projet n'est trouvé
+                return response()->json(['message' => 'Aucun projet approuvé trouvé pour cette municipalité'], 404);
+            }
+    
+            // Retourner les projets trouvés avec une réponse 200
+            return response()->json(['data' => $projets], 200);
+        } catch (\Exception $e) {
+            // En cas d'erreur, loguer l'erreur pour débogage
+            Log::error('Erreur lors de la récupération des projets par municipalité: ' . $e->getMessage());
+    
+            // Retourner une réponse 500 avec un message générique
+            return response()->json(['error' => 'Erreur serveur, veuillez réessayer plus tard.'], 500);
         }
-
-        // Retourner les projets trouvés avec une réponse 200
-        return response()->json(['data' => $projets], 200);
-    } catch (\Exception $e) {
-        // En cas d'erreur, loguer l'erreur pour débogage
-        Log::error('Erreur lors de la récupération des projets par municipalité: ' . $e->getMessage());
-
-        // Retourner une réponse 500 avec un message générique
-        return response()->json(['error' => 'Erreur serveur, veuillez réessayer plus tard.'], 500);
     }
-}
-
+    
 
     
     /**
@@ -149,8 +155,10 @@ class ProjetController extends Controller
             ], 404);
         }
 
-        // Récupérer les projets associés à la municipalité de l'habitant
-        $projets = Projet::where('municipalite_id', $habitant->municipalite_id)->get();
+            // Récupérer les projets associés à la municipalité de l'habitant avec le statut "approuvé"
+    $projets = Projet::where('municipalite_id', $habitant->municipalite_id)
+    ->where('statut', 'approuvé') 
+    ->get();
 
         return response()->json([
             'status' => true,
@@ -181,35 +189,109 @@ class ProjetController extends Controller
      * Update the specified resource in storage.
      */
     public function update(UpdateProjetRequest $request, Projet $projet)
-    {
-        // Vérifier que l'utilisateur courant est bien le propriétaire du projet
-        if (Auth::id() !== $projet->user_id) {
-            return response()->json(['error' => 'Vous n\'avez pas l\'autorisation de modifier ce projet.'], 403);
-        }
-    
-        // Mettre à jour les informations du projet
-        $projet->fill($request->except('photo'));
-    
-        // Vérifier si une nouvelle photo a été uploadée
-        if ($request->hasFile('photo')) {
-            // Supprimer l'ancienne photo si elle existe
-            if ($projet->photo) {
-                Storage::delete('public/photos/' . $projet->photo);
-            }
-            
-            // Sauvegarder la nouvelle photo
-            $photo = $request->file('photo');
-            $photoName = time() . '_' . $photo->getClientOriginalName();
-            $photo->storeAs('public/photos', $photoName);
-            $projet->photo = $photoName;
-        }
-    
-        $projet->update(); 
-        
-        return $this->customJsonResponse("Projet modifié avec succès", $projet);
+{
+    // Vérifier que l'utilisateur courant est bien le propriétaire du projet
+    if (Auth::id() !== $projet->user_id) {
+        return response()->json(['error' => 'Vous n\'avez pas l\'autorisation de modifier ce projet.'], 403);
     }
+
+    // Mettre à jour les informations du projet
+    $projet->fill($request->except('photo'));
+
+    // Vérifier si une nouvelle photo a été uploadée
+    if ($request->hasFile('photo')) {
+        // Supprimer l'ancienne photo si elle existe
+        if ($projet->photo) {
+            Storage::delete('public/photos/' . $projet->photo);
+        }
+        
+        // Sauvegarder la nouvelle photo
+        $photo = $request->file('photo');
+        $photoName = time() . '_' . $photo->getClientOriginalName();
+        $photo->storeAs('public/photos', $photoName);
+        $projet->photo = $photoName;
+    }
+
+    // Enregistrer les modifications
+    $projet->save();  // Utilisez save() pour persister les changements
+
+    return $this->customJsonResponse("Projet modifié avec succès", $projet);
+}
+
+
+public function updateEtat(Request $request, $id)
+{
+    // Récupérer l'utilisateur connecté
+    $user = Auth::user();
+
+    // Vérifier si l'utilisateur est associé à une municipalité
+    $municipalite = $user->municipalites;
+    if (!$municipalite) {
+        return response()->json(['error' => 'Vous n\'êtes pas autorisé à modifier l\'état de ce projet.'], 403);
+    }
+
+    // Récupérer le projet
+    $projet = Projet::findOrFail($id);
+
+    // Récupérer l'utilisateur associé au projet
+    $utilisateur = $projet->user;
+
+    // Vérifier si l'utilisateur associé au projet existe
+    if (!$utilisateur) {
+        return response()->json(['error' => 'Aucun utilisateur associé à ce projet.'], 404);
+    }
+
+    // Récupérer l'habitant associé à l'utilisateur
+    $habitant = $utilisateur->habitant;
+
+    // Vérifier si l'habitant associé à l'utilisateur existe
+    if (!$habitant) {
+        return response()->json(['error' => 'Aucun habitant associé à cet utilisateur.'], 404);
+    }
+
+    // Mettre à jour l'état du projet
+    $projet->etat = $request->input('etat');
+    $projet->save();
+
+    try {
+        // Envoyer un email à l'habitant associé au projet
+        Mail::to($utilisateur->email)->send(new ProjetEtatChange($habitant, $projet->nom));
+    } catch (\Exception $e) {
+        Log::error('Erreur lors de l\'envoi de l\'email: ' . $e->getMessage());
+        return response()->json(['error' => 'Erreur lors de l\'envoi de l\'email.'], 500);
+    }
+
+    return response()->json(['message' => 'État du projet mis à jour avec succès.', 'data' => $projet]);
+}
     
+
     
+    public function getProjetsByHabitant($habitantId)
+{
+    try {
+        // Récupérer l'habitant en fonction de l'ID fourni
+        $habitant = Habitant::findOrFail($habitantId);
+
+        // Récupérer tous les projets associés à cet habitant
+        $projets = Projet::where('user_id', $habitant->user_id)->get();
+
+        // Vérifier si des projets ont été trouvés
+        if ($projets->isEmpty()) {
+            // Retourner une réponse 404 si aucun projet n'est trouvé
+            return response()->json(['message' => 'Aucun projet trouvé pour cet habitant'], 404);
+        }
+
+        // Retourner les projets trouvés avec une réponse 200
+        return response()->json(['data' => $projets], 200);
+    } catch (\Exception $e) {
+        // En cas d'erreur, loguer l'erreur pour débogage
+        Log::error('Erreur lors de la récupération des projets par habitant: ' . $e->getMessage());
+
+        // Retourner une réponse 500 avec un message générique
+        return response()->json(['error' => 'Erreur serveur, veuillez réessayer plus tard.'], 500);
+    }
+}
+
     /**
      * Remove the specified resource from storage.
      */
